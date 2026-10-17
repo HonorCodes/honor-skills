@@ -1,0 +1,8 @@
+{
+  "name": "visual-review-tests",
+  "private": true,
+  "description": "Browser tests for the visual-review skill",
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

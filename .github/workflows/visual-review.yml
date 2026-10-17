@@ -1,0 +1,78 @@
+name: visual-review
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  python:
+    name: Python ${{ matrix.python }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.9", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: false
+      - name: Run the Python suite
+        shell: bash
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+          UV_PYTHON_PREFERENCE: only-managed
+        run: uv run --no-project --python ${{ matrix.python }} python -m unittest discover -s visual-review/tests -p "test_*.py" -v
+
+  macos-system-python:
+    name: macOS system Python
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run the Python suite with /usr/bin/python3
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          /usr/bin/python3 --version
+          /usr/bin/python3 -m unittest discover -s visual-review/tests -p "test_*.py" -v
+
+  browser:
+    name: Browser suite (${{ matrix.engine }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: lts/*
+      - name: Install test dependencies
+        working-directory: visual-review/tests
+        run: |
+          npm ci
+          npx playwright install --with-deps ${{ matrix.engine }}
+      - name: Run the browser suite
+        working-directory: visual-review/tests
+        run: node test_browser.mjs --browser ${{ matrix.engine }}

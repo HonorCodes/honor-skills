@@ -1,0 +1,3376 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>Visual review</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101316;
+        --surface: #181d21;
+        --surface-raised: #20272c;
+        --surface-soft: #151a1e;
+        --line: #303a40;
+        --line-strong: #46545c;
+        --text: #edf2f3;
+        --muted: #a1afb5;
+        --quiet: #718087;
+        --accent: #a7e3d0;
+        --accent-ink: #10211d;
+        --danger: #ff9d91;
+        --ok: #a8e4bd;
+        --warning: #ffd58f;
+        --radius: 14px;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-width: 320px;
+        min-height: 100vh;
+      }
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+      button {
+        color: inherit;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible,
+      canvas:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+
+      .app-shell {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .topbar {
+        min-height: 68px;
+        padding: 0 26px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #263036;
+        background: #14181b;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+      .brand-mark {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        border: 1px solid #52645f;
+        border-radius: 10px;
+        color: var(--accent);
+        background: #202b29;
+        font-weight: 800;
+        font-size: 14px;
+      }
+      .brand-name {
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        font-weight: 750;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .brand-sub {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      .session-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 7px 11px;
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .session-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 10px #a7e3d088;
+      }
+      .session-pill[data-state="done"] .session-dot {
+        background: var(--ok);
+        box-shadow: 0 0 10px #a8e4bd88;
+      }
+      .session-pill[data-state="error"] .session-dot {
+        background: var(--danger);
+        box-shadow: 0 0 10px #ff9d9188;
+      }
+
+      .intro {
+        padding: 25px 30px 18px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+      }
+      .eyebrow {
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-size: 10px;
+        font-weight: 800;
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-size: clamp(20px, 2.2vw, 29px);
+        line-height: 1.2;
+        font-weight: 650;
+        letter-spacing: -0.035em;
+      }
+      .intro-copy {
+        min-width: 0;
+      }
+      .question {
+        margin: 7px 0 0;
+        max-width: 900px;
+        color: #bac5c9;
+        line-height: 1.45;
+        font-size: 13px;
+        white-space: pre-wrap;
+      }
+      .intro-hint {
+        color: var(--quiet);
+        font-size: 11px;
+        white-space: nowrap;
+        padding-bottom: 4px;
+      }
+
+      .workspace {
+        flex: 1;
+        min-height: 0;
+        padding: 0 24px 22px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(285px, 340px);
+        gap: 16px;
+      }
+      .viewer,
+      .notes-panel {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        overflow: hidden;
+      }
+      .viewer {
+        display: flex;
+        flex-direction: column;
+        min-height: 400px;
+      }
+      .toolbar {
+        min-height: 62px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 14px;
+        background: #1b2125;
+        border-bottom: 1px solid var(--line);
+      }
+      .tool-groups {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        min-width: 0;
+        flex-wrap: wrap;
+      }
+      .tool-set {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding-right: 10px;
+        border-right: 1px solid var(--line);
+      }
+      .tool-set:last-child {
+        border-right: 0;
+        padding-right: 0;
+      }
+      .tool-button,
+      .icon-button,
+      .swatch-button,
+      .view-button,
+      .nav-button {
+        border: 1px solid transparent;
+        border-radius: 9px;
+        background: transparent;
+        cursor: pointer;
+        transition:
+          background 0.14s ease,
+          border-color 0.14s ease,
+          color 0.14s ease,
+          transform 0.14s ease;
+      }
+      .tool-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 10px;
+        color: #bac4c8;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .tool-button:hover,
+      .icon-button:hover,
+      .view-button:hover,
+      .nav-button:hover {
+        background: #2b3439;
+        border-color: #414d53;
+        color: var(--text);
+      }
+      .tool-button[aria-pressed="true"] {
+        color: var(--accent);
+        background: #263733;
+        border-color: #466159;
+      }
+      .tool-icon {
+        display: inline-grid;
+        width: 17px;
+        place-items: center;
+        font-size: 14px;
+        line-height: 1;
+      }
+      .tool-button:disabled,
+      .icon-button:disabled,
+      .nav-button:disabled,
+      .done-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.48;
+      }
+      .colors {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .swatch-button {
+        width: 21px;
+        height: 21px;
+        border-radius: 50%;
+        padding: 0;
+        border: 2px solid #20272c;
+        box-shadow: 0 0 0 1px #5b686e;
+      }
+      .swatch-button[aria-pressed="true"] {
+        box-shadow: 0 0 0 2px var(--accent);
+        transform: scale(1.08);
+      }
+      .color-picker-label {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        cursor: pointer;
+        overflow: hidden;
+      }
+      #color {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+      }
+      .icon-button {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        color: #bbc5c9;
+        font-size: 16px;
+      }
+
+      .image-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 16px;
+        min-height: 45px;
+        border-bottom: 1px solid #293238;
+      }
+      .file-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: 620;
+        color: #d9e1e3;
+      }
+      .image-dimensions {
+        color: var(--quiet);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .view-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      .alpha-badge {
+        padding: 3px 8px;
+        border: 1px solid #6b5a33;
+        border-radius: 999px;
+        background: #2c2616;
+        color: var(--warning);
+        font-size: 11px;
+        font-weight: 650;
+        white-space: nowrap;
+      }
+      .alpha-badge[hidden] {
+        display: none;
+      }
+      .zoom-readout {
+        min-width: 38px;
+        color: var(--muted);
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+      }
+      .view-button {
+        padding: 5px 9px;
+        border-color: var(--line);
+        color: #bac4c8;
+        font-size: 11px;
+        font-weight: 650;
+      }
+      .view-button[aria-pressed="true"] {
+        color: var(--accent);
+        border-color: #466159;
+      }
+      .canvas-stage {
+        position: relative;
+        flex: 1;
+        min-height: 250px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        overflow: hidden;
+        background-color: #111518;
+        background-image: radial-gradient(#273137 1px, transparent 1px);
+        background-size: 17px 17px;
+      }
+      #canvas {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: min(64vh, 820px);
+        object-fit: contain;
+        box-shadow: 0 12px 38px #0008;
+        cursor: grab;
+        touch-action: none;
+        transform-origin: 0 0;
+      }
+      #canvas[hidden] {
+        display: none;
+      }
+      #video {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: min(64vh, 820px);
+        object-fit: contain;
+        background: #000;
+        box-shadow: 0 12px 38px #0008;
+      }
+      #video[hidden] {
+        display: none;
+      }
+      .viewer:fullscreen #video,
+      .viewer.is-fullscreen #video {
+        max-height: calc(100vh - 210px);
+      }
+      #canvas[data-alpha="transparent"] {
+        background-color: #c3c9cc;
+        background-image: conic-gradient(
+          #7d878b 25%,
+          transparent 0 50%,
+          #7d878b 0 75%,
+          transparent 0
+        );
+        background-size: 16px 16px;
+      }
+      .canvas-stage[data-panning] #canvas {
+        cursor: grabbing !important;
+      }
+      .viewer:fullscreen,
+      .viewer.is-fullscreen {
+        width: 100vw;
+        height: 100vh;
+        border: 0;
+        border-radius: 0;
+      }
+      .viewer.is-fullscreen {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+      }
+      .viewer:fullscreen #canvas,
+      .viewer.is-fullscreen #canvas {
+        max-height: calc(100vh - 210px);
+      }
+      .empty-state {
+        color: #88969c;
+        text-align: center;
+        max-width: 320px;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .empty-state strong {
+        display: block;
+        color: #d2dcdf;
+        font-size: 15px;
+        margin-bottom: 6px;
+      }
+      .viewer-alert {
+        display: none;
+        padding: 8px 16px;
+        border-bottom: 1px solid #6b3a35;
+        background: #2a1716;
+        color: var(--danger);
+        font-size: 12px;
+      }
+      .viewer:fullscreen .viewer-alert:not([hidden]),
+      .viewer.is-fullscreen .viewer-alert:not([hidden]) {
+        display: block;
+      }
+      .text-composer {
+        position: absolute;
+        z-index: 2;
+        width: min(280px, calc(100% - 20px));
+        padding: 9px;
+        border: 1px solid #586d67;
+        border-radius: 11px;
+        background: #17211f;
+        box-shadow: 0 12px 32px #000a;
+      }
+      .text-composer[hidden] {
+        display: none;
+      }
+      .text-composer textarea {
+        display: block;
+        width: 100%;
+        min-height: 56px;
+        max-height: 120px;
+        resize: vertical;
+        padding: 8px 9px;
+        color: var(--text);
+        background: #101614;
+        border: 1px solid #394a45;
+        border-radius: 7px;
+        outline-offset: 1px;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+      .composer-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .composer-hint {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .small-primary {
+        border: 0;
+        border-radius: 7px;
+        background: var(--accent);
+        color: var(--accent-ink);
+        font-size: 11px;
+        font-weight: 750;
+        padding: 7px 10px;
+        cursor: pointer;
+      }
+      .small-primary:hover {
+        background: #c2f2e5;
+      }
+
+      .viewer-bottom {
+        min-height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 10px 14px;
+        border-top: 1px solid var(--line);
+        background: #1a2024;
+      }
+      .save-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .status-light {
+        width: 7px;
+        height: 7px;
+        flex: 0 0 7px;
+        border-radius: 50%;
+        background: var(--quiet);
+      }
+      .save-status[data-kind="saved"] .status-light {
+        background: var(--ok);
+      }
+      .save-status[data-kind="saving"] .status-light {
+        background: var(--warning);
+        animation: pulse 1s infinite ease-in-out;
+      }
+      .save-status[data-kind="error"] .status-light {
+        background: var(--danger);
+      }
+      @keyframes pulse {
+        50% {
+          opacity: 0.35;
+        }
+      }
+      .nav-controls {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .nav-button {
+        height: 32px;
+        padding: 0 10px;
+        border-color: #364147;
+        color: #d2dbde;
+        background: #20272b;
+        font-size: 11px;
+        font-weight: 650;
+      }
+      .index-label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--quiet);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      #index {
+        width: 52px;
+        height: 32px;
+        text-align: center;
+        color: var(--text);
+        background: #121719;
+        border: 1px solid #3c484e;
+        border-radius: 8px;
+        font-size: 12px;
+      }
+      .index-total {
+        min-width: 28px;
+      }
+
+      .notes-panel {
+        display: flex;
+        flex-direction: column;
+      }
+      .notes-head {
+        padding: 17px 17px 13px;
+        border-bottom: 1px solid var(--line);
+      }
+      .notes-head-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .notes-head h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .notes-number {
+        color: #97aaa8;
+        background: #263733;
+        border: 1px solid #3c5750;
+        border-radius: 999px;
+        font-size: 10px;
+        padding: 4px 7px;
+      }
+      .notes-help {
+        margin: 7px 0 0;
+        color: var(--quiet);
+        font-size: 11px;
+        line-height: 1.45;
+      }
+      .notes-body {
+        padding: 13px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 230px;
+      }
+      #notes {
+        flex: 1;
+        width: 100%;
+        min-height: 200px;
+        resize: vertical;
+        padding: 12px;
+        color: #e1e8e9;
+        background: #121719;
+        border: 1px solid #343f44;
+        border-radius: 10px;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      #notes::placeholder {
+        color: #65737a;
+      }
+      .notes-foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 2px 0;
+        color: var(--quiet);
+        font-size: 10px;
+      }
+      .limits-summary {
+        margin: 0 13px 12px;
+        padding: 9px 11px;
+        display: grid;
+        gap: 5px;
+        border: 1px solid #303d40;
+        border-radius: 9px;
+        background: #151b1d;
+      }
+      .limit-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--quiet);
+        font-size: 10px;
+        line-height: 1.35;
+      }
+      .limit-row strong {
+        color: #bfccce;
+        font-weight: 650;
+        white-space: nowrap;
+      }
+      .limit-row span {
+        text-align: right;
+      }
+      .done-button {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 9px;
+        margin: 0 13px 14px;
+        min-height: 43px;
+        border: 1px solid #88cdb6;
+        border-radius: 10px;
+        color: #10211d;
+        background: var(--accent);
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition:
+          transform 0.14s ease,
+          background 0.14s ease;
+      }
+      .done-button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        background: #c0f1e3;
+      }
+      .done-check {
+        font-size: 16px;
+      }
+      .error-message {
+        margin: 0 14px 12px;
+        color: var(--danger);
+        font-size: 11px;
+        line-height: 1.45;
+      }
+      .error-message[hidden] {
+        display: none;
+      }
+      .canvas-warning {
+        margin: 0 14px 12px;
+        color: var(--warning);
+        font-size: 11px;
+        line-height: 1.45;
+      }
+      .canvas-warning[hidden] {
+        display: none;
+      }
+      .footer-hint {
+        padding: 0 28px 15px;
+        color: #637178;
+        font-size: 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      @media (max-width: 960px) {
+        .workspace {
+          grid-template-columns: minmax(0, 1fr) minmax(250px, 290px);
+          padding: 0 16px 16px;
+          gap: 12px;
+        }
+        .tool-button {
+          padding: 8px;
+        }
+        .tool-label {
+          display: none;
+        }
+        .toolbar {
+          gap: 7px;
+        }
+      }
+      @media (max-width: 720px) {
+        .topbar {
+          padding: 0 16px;
+          min-height: 58px;
+        }
+        .intro {
+          padding: 20px 17px 15px;
+          align-items: flex-start;
+        }
+        .intro-hint {
+          display: none;
+        }
+        .workspace {
+          display: flex;
+          flex-direction: column;
+          padding: 0 10px 14px;
+        }
+        .viewer {
+          min-height: 370px;
+        }
+        .toolbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .tool-groups {
+          width: 100%;
+          justify-content: space-between;
+        }
+        .tool-label {
+          display: inline;
+        }
+        .tool-button {
+          padding: 7px 8px;
+        }
+        .notes-panel {
+          min-height: 340px;
+        }
+        .notes-body {
+          min-height: 180px;
+        }
+        #notes {
+          min-height: 150px;
+        }
+        .footer-hint {
+          padding: 0 15px 12px;
+        }
+      }
+      @media (max-width: 420px) {
+        .brand-sub {
+          display: none;
+        }
+        .session-pill {
+          padding: 6px 8px;
+          font-size: 10px;
+        }
+        .image-meta {
+          padding: 9px 11px;
+        }
+        .canvas-stage {
+          padding: 11px;
+        }
+        .viewer-bottom {
+          padding: 8px;
+          gap: 6px;
+        }
+        .nav-controls {
+          gap: 4px;
+        }
+        .nav-button {
+          padding: 0 7px;
+        }
+        .index-label {
+          gap: 3px;
+        }
+        #index {
+          width: 43px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">V</div>
+          <div>
+            <div class="brand-name">Visual review</div>
+            <div class="brand-sub">Image notes &amp; markup</div>
+          </div>
+        </div>
+        <div class="session-pill" id="session-pill" data-state="open">
+          <span class="session-dot" aria-hidden="true"></span
+          ><span id="session-label">Review in progress</span>
+        </div>
+      </header>
+
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <div class="eyebrow">Review workspace</div>
+          <h1 id="page-title">Images, one at a time.</h1>
+          <p class="question" id="question">Loading the review prompt…</p>
+        </div>
+        <div class="intro-hint">Your notes save as you work</div>
+      </section>
+
+      <main class="workspace" aria-label="Image review workspace">
+        <section
+          class="viewer"
+          id="viewer"
+          aria-label="Image and annotation tools"
+        >
+          <div class="toolbar">
+            <div class="tool-groups" role="toolbar" aria-label="Markup tools">
+              <div class="tool-set" aria-label="Drawing tools">
+                <button
+                  class="tool-button"
+                  type="button"
+                  data-tool="view"
+                  aria-pressed="true"
+                  aria-label="View"
+                  title="View: drag to pan; markup is off (1, Esc)"
+                >
+                  <span class="tool-icon" aria-hidden="true">✋</span
+                  ><span class="tool-label">View</span>
+                </button>
+                <button
+                  class="tool-button"
+                  type="button"
+                  data-tool="pen"
+                  aria-pressed="false"
+                  aria-label="Pen"
+                  title="Draw freehand (2)"
+                >
+                  <span class="tool-icon" aria-hidden="true">／</span
+                  ><span class="tool-label">Pen</span>
+                </button>
+                <button
+                  class="tool-button"
+                  type="button"
+                  data-tool="arrow"
+                  aria-pressed="false"
+                  aria-label="Arrow"
+                  title="Draw an arrow (3)"
+                >
+                  <span class="tool-icon" aria-hidden="true">↗</span
+                  ><span class="tool-label">Arrow</span>
+                </button>
+                <button
+                  class="tool-button"
+                  type="button"
+                  data-tool="rect"
+                  aria-pressed="false"
+                  aria-label="Rectangle"
+                  title="Draw a rectangle (4)"
+                >
+                  <span class="tool-icon" aria-hidden="true">▱</span
+                  ><span class="tool-label">Rectangle</span>
+                </button>
+                <button
+                  class="tool-button"
+                  type="button"
+                  data-tool="text"
+                  aria-pressed="false"
+                  aria-label="Text"
+                  title="Place a text label (5)"
+                >
+                  <span class="tool-icon" aria-hidden="true">T</span
+                  ><span class="tool-label">Text</span>
+                </button>
+              </div>
+              <div class="tool-set" aria-label="Markup color">
+                <div class="colors" aria-label="Color presets">
+                  <button
+                    class="swatch-button"
+                    type="button"
+                    data-color="#ff5c54"
+                    aria-label="Red"
+                    title="Red (Alt+1)"
+                    style="background: #ff5c54"
+                    aria-pressed="true"
+                  ></button>
+                  <button
+                    class="swatch-button"
+                    type="button"
+                    data-color="#43d9bd"
+                    aria-label="Mint"
+                    title="Mint (Alt+2)"
+                    style="background: #43d9bd"
+                    aria-pressed="false"
+                  ></button>
+                  <button
+                    class="swatch-button"
+                    type="button"
+                    data-color="#ffc95c"
+                    aria-label="Yellow"
+                    title="Yellow (Alt+3)"
+                    style="background: #ffc95c"
+                    aria-pressed="false"
+                  ></button>
+                  <button
+                    class="swatch-button"
+                    type="button"
+                    data-color="#68a9ff"
+                    aria-label="Blue"
+                    title="Blue (Alt+4)"
+                    style="background: #68a9ff"
+                    aria-pressed="false"
+                  ></button>
+                </div>
+                <label
+                  class="color-picker-label"
+                  title="Choose a custom color (Alt+5)"
+                  ><input
+                    id="color"
+                    type="color"
+                    value="#ff5c54"
+                    aria-label="Markup color"
+                /></label>
+              </div>
+              <div class="tool-set" aria-label="Edit markup">
+                <button
+                  class="icon-button"
+                  id="undo"
+                  type="button"
+                  aria-label="Undo"
+                  title="Undo last markup (Ctrl+Z)"
+                  disabled
+                >
+                  ↶
+                </button>
+                <button
+                  class="icon-button"
+                  id="redo"
+                  type="button"
+                  aria-label="Redo"
+                  title="Redo undone markup (Ctrl+Y)"
+                  disabled
+                >
+                  ↷
+                </button>
+                <button
+                  class="icon-button"
+                  id="clear"
+                  type="button"
+                  aria-label="Clear"
+                  title="Clear all markup (Ctrl+E)"
+                  disabled
+                >
+                  ⌫
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="image-meta">
+            <div class="file-name" id="file-name">No image loaded</div>
+            <div class="view-controls">
+              <span class="alpha-badge" id="alpha-badge" hidden></span>
+              <div class="image-dimensions" id="image-dimensions"></div>
+              <span class="zoom-readout" id="zoom-readout" title="Zoom"
+                >1.0×</span
+              >
+              <button
+                class="view-button"
+                id="fit-view"
+                type="button"
+                title="Reset zoom and pan (Space)"
+              >
+                Fit
+              </button>
+              <button
+                class="view-button"
+                id="fullscreen"
+                type="button"
+                aria-pressed="false"
+                title="Show the viewer fullscreen (Ctrl+F; Esc closes)"
+              >
+                Fullscreen
+              </button>
+            </div>
+          </div>
+
+          <div class="viewer-alert" id="viewer-alert" hidden></div>
+          <div class="canvas-stage" id="canvas-stage">
+            <canvas
+              id="canvas"
+              tabindex="0"
+              aria-label="Image markup canvas"
+              hidden
+            ></canvas>
+            <video
+              id="video"
+              controls
+              playsinline
+              preload="auto"
+              aria-label="Review video"
+              hidden
+            ></video>
+            <div class="empty-state" id="empty-state">
+              <strong>Getting the images ready</strong>The original stays
+              untouched. Add notes or draw on the review canvas.
+            </div>
+            <div class="text-composer" id="text-composer" hidden>
+              <textarea
+                id="text-input"
+                rows="2"
+                aria-label="Text markup"
+                placeholder="Type a label…"
+              ></textarea>
+              <div class="composer-actions">
+                <span class="composer-hint"
+                  >Enter to place · Shift+Enter for a new line</span
+                ><button class="small-primary" id="place-text" type="button">
+                  Place text
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="viewer-bottom">
+            <div
+              class="save-status"
+              id="save-status"
+              data-kind="neutral"
+              role="status"
+              aria-live="polite"
+            >
+              <span class="status-light" aria-hidden="true"></span
+              ><span id="save-status-text">Connecting to review…</span>
+            </div>
+            <div class="nav-controls" aria-label="Image navigation">
+              <button
+                class="nav-button"
+                id="previous"
+                type="button"
+                aria-label="Previous"
+              >
+                ← Previous
+              </button>
+              <label class="index-label" for="index"
+                ><span>Image</span
+                ><input
+                  id="index"
+                  type="number"
+                  min="1"
+                  value="1"
+                  aria-label="Image number"
+                /><span class="index-total" id="index-total">/ 0</span></label
+              >
+              <button
+                class="nav-button"
+                id="next"
+                type="button"
+                aria-label="Next"
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="notes-panel" aria-labelledby="notes-heading">
+          <div class="notes-head">
+            <div class="notes-head-row">
+              <h2 id="notes-heading">Review notes</h2>
+              <span class="notes-number" id="notes-image-number">Image 1</span>
+            </div>
+            <p class="notes-help">
+              Capture what you noticed on this image. Changes autosave while you
+              work; closing the tab sends any pending edits.
+            </p>
+          </div>
+          <div class="notes-body">
+            <textarea
+              id="notes"
+              aria-label="Notes for this image"
+              placeholder="Write your observations…"
+            ></textarea>
+            <div class="notes-foot">
+              <span>Autosaves while you work</span
+              ><span id="notes-count">0 / 6,000 UTF-16</span>
+            </div>
+          </div>
+          <div class="limits-summary" aria-label="Annotation and save limits">
+            <div class="limit-row">
+              <strong>Tab close</strong><span>Sends pending edits</span>
+            </div>
+            <div class="limit-row">
+              <strong>Notes</strong><span>6,000 UTF-16 units per image</span>
+            </div>
+            <div class="limit-row">
+              <strong>Markup</strong><span>20,000 marks per image</span>
+            </div>
+            <div class="limit-row">
+              <strong>Pen streaming</strong
+              ><span>Overlapping 512-point segments (internal)</span>
+            </div>
+            <div class="limit-row">
+              <strong>Text labels</strong><span>240 codepoints · 8 lines</span>
+            </div>
+          </div>
+          <div
+            class="canvas-warning"
+            id="canvas-warning"
+            role="note"
+            hidden
+          ></div>
+          <div
+            class="error-message"
+            id="error-message"
+            role="alert"
+            hidden
+          ></div>
+          <button class="done-button" id="done" type="button">
+            <span class="done-check" aria-hidden="true">✓</span>Done
+          </button>
+        </aside>
+      </main>
+
+      <div class="footer-hint">
+        <span
+          >← → navigate · Ctrl+wheel zoom · Shift+wheel or View drag pan · Esc
+          exits fullscreen, then the tool · Drawings use original image
+          pixels</span
+        ><span>Local review session</span>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        "use strict";
+
+        const MAX_PAGEHIDE_BYTES = 56 * 1024;
+        const MAX_NOTES_UTF16 = 6_000;
+        const MAX_MARKS = 20_000;
+        const MAX_TEXT_CHARS = 240;
+        const MAX_TEXT_LINES = 8;
+        const PEN_SEGMENT_POINTS = 512;
+        const SAVE_DELAY_MS = 150;
+        // Notes save when typing pauses, not on every keystroke.
+        const NOTES_SAVE_DELAY_MS = 1000;
+        // A save shorter than this never shows "Saving changes…".
+        const SAVING_STATUS_DELAY_MS = 300;
+        const MIN_ZOOM = 0.25;
+        const MAX_ZOOM = 32;
+        // The on-screen canvas shows a copy of the image no larger than this.
+        // Markup and the marked PNG keep the full display size.
+        const PREVIEW_MAX_EDGE = 2048;
+        // A marked PNG is rendered this long after an image's last markup change.
+        const UPLOAD_DELAY_MS = 1000;
+        const EXPORT_FAILED =
+          "This browser cannot render the marked PNG for this image. Your markup is saved.";
+        const $ = (selector) => document.querySelector(selector);
+        const canvas = $("#canvas");
+        let ctx = null;
+        const imageLoads = new Map();
+        const preparePromises = new Map();
+        const encoder = new TextEncoder();
+        const ui = {
+          question: $("#question"),
+          fileName: $("#file-name"),
+          dimensions: $("#image-dimensions"),
+          empty: $("#empty-state"),
+          notes: $("#notes"),
+          notesCount: $("#notes-count"),
+          notesImage: $("#notes-image-number"),
+          index: $("#index"),
+          total: $("#index-total"),
+          previous: $("#previous"),
+          next: $("#next"),
+          undo: $("#undo"),
+          redo: $("#redo"),
+          clear: $("#clear"),
+          done: $("#done"),
+          status: $("#save-status"),
+          statusText: $("#save-status-text"),
+          error: $("#error-message"),
+          canvasWarning: $("#canvas-warning"),
+          sessionPill: $("#session-pill"),
+          sessionLabel: $("#session-label"),
+          composer: $("#text-composer"),
+          textInput: $("#text-input"),
+          placeText: $("#place-text"),
+          stage: $("#canvas-stage"),
+          viewer: $("#viewer"),
+          viewerAlert: $("#viewer-alert"),
+          video: $("#video"),
+          alphaBadge: $("#alpha-badge"),
+          zoom: $("#zoom-readout"),
+          fit: $("#fit-view"),
+          fullscreen: $("#fullscreen"),
+        };
+
+        let state = null;
+        let images = [];
+        let activeIndex = -1;
+        let selectedTool = "view";
+        let selectedColor = "#ff5c54";
+        let activePointer = null;
+        let panPointer = null;
+        // Zoom and pan are a CSS transform on the canvas. Markup stays in
+        // image coordinates because imagePoint reads the transformed box.
+        const view = { scale: 1, x: 0, y: 0 };
+        const alphaCache = new Map();
+        // Per image: the gestures Undo removed, newest last, until a new mark or Clear.
+        const redoStacks = new Map();
+        let leavingFullscreen = false;
+        let engineExitAt = -Infinity;
+        let pendingTextPoint = null;
+        let saveTail = Promise.resolve();
+        const savesInFlight = new Map();
+        // The active image as the canvas draws it: { index, source, width, height }.
+        let workingImage = null;
+        // Per image: the timer of a scheduled marked-PNG upload.
+        const uploadTimers = new Map();
+        let uploadsRunning = 0;
+        // Uploads run one at a time, so at most one full-size canvas exists.
+        let uploadTail = Promise.resolve();
+        let heartbeatTimer = 0;
+        let completed = false;
+        let closing = false;
+
+        // crypto.randomUUID is missing outside secure contexts.
+        function fallbackId() {
+          return Array.from(
+            crypto.getRandomValues(new Uint8Array(16)),
+            (byte) => byte.toString(16).padStart(2, "0"),
+          ).join("");
+        }
+        function randomId() {
+          return crypto.randomUUID ? crypto.randomUUID() : fallbackId();
+        }
+        // Names this page load to the server, which ignores the heartbeats and
+        // the close request of a page that a reload has replaced.
+        const pageId = randomId();
+
+        function setStatus(kind, text) {
+          ui.status.dataset.kind = kind;
+          ui.statusText.textContent = text;
+        }
+
+        function showError(message) {
+          ui.error.textContent = message;
+          ui.error.hidden = false;
+          ui.viewerAlert.textContent = message;
+          ui.viewerAlert.hidden = false;
+          ui.sessionPill.dataset.state = "error";
+          if (!completed) ui.sessionLabel.textContent = "Needs attention";
+        }
+
+        function clearError() {
+          ui.error.textContent = "";
+          ui.error.hidden = true;
+          ui.viewerAlert.textContent = "";
+          ui.viewerAlert.hidden = true;
+          if (!completed) {
+            ui.sessionPill.dataset.state = "open";
+            ui.sessionLabel.textContent = "Review in progress";
+          }
+        }
+
+        function setSessionDone() {
+          completed = true;
+          stopHeartbeats();
+          setStatus("saved", "Review complete. You can close this tab.");
+          ui.sessionPill.dataset.state = "done";
+          ui.sessionLabel.textContent = "Review complete";
+          ui.done.disabled = true;
+          ui.done.innerHTML =
+            '<span class="done-check" aria-hidden="true">✓</span>Review complete';
+          for (const button of document.querySelectorAll(
+            ".tool-button, .icon-button, .nav-button",
+          ))
+            button.disabled = true;
+          // Keep the last frame on screen and stop playback. A clip still loading
+          // is revealed when its metadata arrives, but never started.
+          ui.video.onloadedmetadata = () => {
+            ui.empty.hidden = true;
+            ui.video.hidden = false;
+            ui.video.pause();
+          };
+          ui.video.onended = null;
+          ui.video.onerror = null;
+          ui.video.pause();
+          ui.notes.disabled = true;
+          canvas.style.cursor = "default";
+          ui.index.disabled = true;
+        }
+
+        function responseError(response, data) {
+          return (
+            (data && typeof data.error === "string" && data.error) ||
+            `Request failed (${response.status})`
+          );
+        }
+
+        async function readJson(response) {
+          let data;
+          try {
+            data = await response.json();
+          } catch {
+            throw new Error(
+              `Server returned invalid JSON (${response.status})`,
+            );
+          }
+          if (!response.ok) throw new Error(responseError(response, data));
+          return data;
+        }
+
+        function closeSnapshotFor(index) {
+          const record = images[index];
+          return {
+            index,
+            revision: record.revision,
+            notes_delta: record.notesJournal
+              .filter((patch) => patch.revision > record.savedRevision)
+              .map((patch) => ({
+                revision: patch.revision,
+                start: patch.start,
+                delete: patch.delete,
+                insert: patch.insert,
+              })),
+            markup_delta: record.markupJournal
+              .filter((patch) => patch.revision > record.savedRevision)
+              .map((patch) => {
+                const snapshot = { revision: patch.revision, op: patch.op };
+                if (patch.index !== undefined) snapshot.index = patch.index;
+                if (patch.mark !== undefined) snapshot.mark = patch.mark;
+                if (patch.group !== undefined) snapshot.group = patch.group;
+                return snapshot;
+              }),
+            png: null,
+          };
+        }
+        function closePayloadWithinLimit() {
+          return (
+            encoder.encode(JSON.stringify(closePayload())).byteLength <=
+            MAX_PAGEHIDE_BYTES
+          );
+        }
+
+        function updateMarkupButtons() {
+          const record = images[activeIndex];
+          // Markup changes wait for prepare, which fixes the display size.
+          const hasMarkup = Boolean(record?.displaySize && record.markup.length);
+          const video = isVideo();
+          ui.undo.disabled = !hasMarkup || completed || video;
+          ui.clear.disabled = !hasMarkup || completed || video;
+          ui.redo.disabled =
+            !redoStacks.get(activeIndex)?.length || completed || video;
+        }
+
+        function setTool(tool) {
+          if (
+            activePointer &&
+            !finishDrawing({ pointerId: activePointer.pointerId })
+          )
+            return;
+          selectedTool = tool;
+          for (const button of document.querySelectorAll("[data-tool]")) {
+            button.setAttribute(
+              "aria-pressed",
+              String(button.dataset.tool === tool),
+            );
+          }
+          canvas.style.cursor =
+            tool === "view" ? "grab" : tool === "text" ? "text" : "crosshair";
+          hideTextComposer();
+        }
+
+        function setColor(color) {
+          selectedColor = color;
+          $("#color").value = color;
+          for (const button of document.querySelectorAll("[data-color]")) {
+            button.setAttribute(
+              "aria-pressed",
+              String(
+                button.dataset.color.toLowerCase() === color.toLowerCase(),
+              ),
+            );
+          }
+        }
+
+        function rounded(value) {
+          return Math.round(value * 100) / 100;
+        }
+
+        function imagePoint(event) {
+          const size = images[activeIndex]?.displaySize;
+          const rect = canvas.getBoundingClientRect();
+          if (!size || !rect.width || !rect.height) return null;
+          return {
+            x: Math.max(
+              0,
+              Math.min(
+                size.width,
+                ((event.clientX - rect.left) * size.width) / rect.width,
+              ),
+            ),
+            y: Math.max(
+              0,
+              Math.min(
+                size.height,
+                ((event.clientY - rect.top) * size.height) / rect.height,
+              ),
+            ),
+          };
+        }
+
+        // New marks are sized as at Fit, so zoom never changes their size.
+        function fitWidth() {
+          return canvas.getBoundingClientRect().width / view.scale;
+        }
+
+        function lineWidthForImage() {
+          const size = images[activeIndex]?.displaySize;
+          const width = fitWidth();
+          if (!size || !width) return 3;
+          return rounded(Math.max(1, (3 * size.width) / width));
+        }
+
+        function drawArrow(context, mark) {
+          const dx = mark.x2 - mark.x1;
+          const dy = mark.y2 - mark.y1;
+          const angle = Math.atan2(dy, dx);
+          const head = Math.max(mark.width * 3.5, 9);
+          context.beginPath();
+          context.moveTo(mark.x1, mark.y1);
+          context.lineTo(mark.x2, mark.y2);
+          context.moveTo(mark.x2, mark.y2);
+          context.lineTo(
+            mark.x2 - head * Math.cos(angle - Math.PI / 6),
+            mark.y2 - head * Math.sin(angle - Math.PI / 6),
+          );
+          context.moveTo(mark.x2, mark.y2);
+          context.lineTo(
+            mark.x2 - head * Math.cos(angle + Math.PI / 6),
+            mark.y2 - head * Math.sin(angle + Math.PI / 6),
+          );
+          context.stroke();
+        }
+
+        // A pen, arrow or rectangle in the context's coordinates. The canvas
+        // and the marked PNG share this geometry; an empty pen draws nothing.
+        function drawShape(context, mark) {
+          if (mark.type === "pen" && mark.points.length === 0) return;
+          context.save();
+          context.strokeStyle = mark.color;
+          context.fillStyle = mark.color;
+          context.lineWidth = mark.width || 2;
+          context.lineCap = "round";
+          context.lineJoin = "round";
+          if (mark.type === "pen") {
+            if (mark.points.length === 1) {
+              context.beginPath();
+              context.arc(
+                mark.points[0][0],
+                mark.points[0][1],
+                Math.max(1, context.lineWidth / 2),
+                0,
+                Math.PI * 2,
+              );
+              context.fill();
+            } else {
+              context.beginPath();
+              context.moveTo(mark.points[0][0], mark.points[0][1]);
+              for (let point = 1; point < mark.points.length; point += 1)
+                context.lineTo(mark.points[point][0], mark.points[point][1]);
+              context.stroke();
+            }
+          } else if (mark.type === "arrow") {
+            drawArrow(context, mark);
+          } else if (mark.type === "rect") {
+            context.strokeRect(mark.x, mark.y, mark.w, mark.h);
+          }
+          context.restore();
+        }
+
+        function renderMarkup(context, marks) {
+          for (const mark of marks) {
+            if (mark.type !== "text") {
+              drawShape(context, mark);
+              continue;
+            }
+            context.save();
+            context.fillStyle = mark.color;
+            context.font = `${mark.size}px Arial, sans-serif`;
+            context.textBaseline = "top";
+            const lineHeight = mark.size * 1.25;
+            mark.text
+              .split("\n")
+              .slice(0, MAX_TEXT_LINES)
+              .forEach((line, lineIndex) => {
+                context.fillText(line, mark.x, mark.y + lineHeight * lineIndex);
+              });
+            context.restore();
+          }
+        }
+
+        function renderPreviewMarkup(context, record, marks) {
+          context.save();
+          context.scale(
+            canvas.width / record.displaySize.width,
+            canvas.height / record.displaySize.height,
+          );
+          renderMarkup(context, marks);
+          context.restore();
+        }
+
+        function applyView() {
+          canvas.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
+          ui.zoom.textContent = `${view.scale < 10 ? view.scale.toFixed(1) : Math.round(view.scale)}×`;
+        }
+
+        function resetView() {
+          view.scale = 1;
+          view.x = 0;
+          view.y = 0;
+          applyView();
+        }
+
+        function zoomAt(clientX, clientY, factor) {
+          const rect = canvas.getBoundingClientRect();
+          const scale = Math.min(
+            MAX_ZOOM,
+            Math.max(MIN_ZOOM, view.scale * factor),
+          );
+          const ratio = scale / view.scale;
+          view.x += (clientX - rect.left) * (1 - ratio);
+          view.y += (clientY - rect.top) * (1 - ratio);
+          view.scale = scale;
+          applyView();
+        }
+
+        // Counts on the canvas copy, whose longest edge is at most PREVIEW_MAX_EDGE.
+        function alphaStats({ source, width, height }) {
+          const probe = document.createElement("canvas");
+          probe.width = width;
+          probe.height = height;
+          try {
+            const probeContext = probe.getContext("2d", {
+              willReadFrequently: true,
+            });
+            probeContext.drawImage(source, 0, 0, width, height);
+            const { data } = probeContext.getImageData(0, 0, width, height);
+            let zero = 0;
+            let translucent = 0;
+            for (let at = 3; at < data.length; at += 4) {
+              if (data[at] === 0) zero += 1;
+              if (data[at] < 255) translucent += 1;
+            }
+            return { zero, translucent, total: data.length / 4 };
+          } finally {
+            probe.width = 0;
+            probe.height = 0;
+          }
+        }
+
+        function showAlpha(index, view) {
+          if (!alphaCache.has(index)) alphaCache.set(index, alphaStats(view));
+          const { zero, translucent, total } = alphaCache.get(index);
+          if (translucent) canvas.dataset.alpha = "transparent";
+          else delete canvas.dataset.alpha;
+          ui.alphaBadge.hidden = zero === 0;
+          if (!zero) return;
+          const percent = (zero * 100) / total;
+          const shown =
+            zero === total
+              ? "100"
+              : percent >= 99.5
+                ? ">99"
+                : percent < 0.5
+                  ? "<1"
+                  : String(Math.round(percent));
+          ui.alphaBadge.textContent = `alpha 0 on ${shown}% of pixels`;
+          ui.alphaBadge.title = `${zero.toLocaleString()} of ${total.toLocaleString()} sampled pixels are fully transparent`;
+        }
+
+        function isFullscreen() {
+          return (
+            document.fullscreenElement === ui.viewer ||
+            ui.viewer.classList.contains("is-fullscreen")
+          );
+        }
+
+        function syncFullscreen() {
+          const active = isFullscreen();
+          ui.fullscreen.setAttribute("aria-pressed", String(active));
+          ui.fullscreen.textContent = active ? "Exit fullscreen" : "Fullscreen";
+        }
+
+        async function enterFullscreen() {
+          if (isFullscreen()) return;
+          try {
+            await ui.viewer.requestFullscreen();
+          } catch {
+            // An engine with the Fullscreen API disabled still gets a viewport-filling viewer.
+            ui.viewer.classList.add("is-fullscreen");
+          }
+          syncFullscreen();
+        }
+
+        function exitFullscreen() {
+          if (document.fullscreenElement) {
+            leavingFullscreen = true;
+            document.exitFullscreen().catch(() => {});
+          }
+          ui.viewer.classList.remove("is-fullscreen");
+          syncFullscreen();
+        }
+
+        // The full-resolution image as the browser decodes it, with any EXIF
+        // orientation applied.
+        function getLoadedImage(index) {
+          let pending = imageLoads.get(index);
+          if (!pending) {
+            const record = images[index];
+            pending = new Promise((resolve, reject) => {
+              const image = new Image();
+              image.onload = () => resolve(image);
+              image.onerror = () =>
+                reject(new Error(`Could not load image ${record.name}`));
+              image.src = record.url;
+            });
+            imageLoads.set(index, pending);
+            pending.catch(() => {
+              if (imageLoads.get(index) === pending) imageLoads.delete(index);
+            });
+          }
+          return pending;
+        }
+
+        // The server accepts the decoded size as the display size: markup
+        // coordinates and the marked PNG use it.
+        async function ensurePrepared(index, image) {
+          const record = images[index];
+          if (record.displaySize) return;
+          let pending = preparePromises.get(index);
+          if (!pending) {
+            pending = (async () => {
+              const width = image.naturalWidth;
+              const height = image.naturalHeight;
+              const response = await fetch("api/prepare", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ index, width, height }),
+              });
+              const result = await readJson(response);
+              if (
+                result.ready !== true ||
+                result.width !== width ||
+                result.height !== height ||
+                !Number.isSafeInteger(result.markup_revision)
+              ) {
+                throw new Error(
+                  `The server did not accept ${width} × ${height} as the size of ${record.name}.`,
+                );
+              }
+              // This page's own notes save may still be in flight, so the
+              // revision may lie between the saved and the local one. This
+              // page changes no markup before prepare, and notes never move
+              // markup_revision, so a different markup revision means another
+              // page changed the markup.
+              if (
+                !Number.isSafeInteger(result.revision) ||
+                result.revision < record.savedRevision ||
+                result.revision > record.revision ||
+                result.markup_revision !== record.markupRevision
+              ) {
+                throw new Error(
+                  "The server has a newer image revision; reopen the review before adding markup.",
+                );
+              }
+              record.markupRevision = result.markup_revision;
+              record.uploadedRevision =
+                result.png_stale === false ? result.png_revision : null;
+              record.displaySize = { width, height };
+              if (result.png_stale === true) scheduleUpload(index);
+            })();
+            preparePromises.set(index, pending);
+          }
+          try {
+            await pending;
+          } finally {
+            if (preparePromises.get(index) === pending)
+              preparePromises.delete(index);
+          }
+        }
+
+        function isVideo(index = activeIndex) {
+          return images[index]?.kind === "video";
+        }
+
+        // A video item shows the clip and its notes; markup, zoom and pan are off.
+        let toolBeforeVideo = null;
+        function updateMediaMode() {
+          const video = isVideo();
+          if (video && selectedTool !== "view") {
+            toolBeforeVideo = selectedTool;
+            setTool("view");
+          } else if (!video && toolBeforeVideo) {
+            setTool(toolBeforeVideo);
+            toolBeforeVideo = null;
+          }
+          for (const button of document.querySelectorAll("[data-tool]"))
+            button.disabled = video;
+          ui.fit.disabled = video;
+          ui.zoom.hidden = video;
+          updateMarkupButtons();
+        }
+
+        function showEmpty(title, detail) {
+          const heading = document.createElement("strong");
+          heading.textContent = title;
+          ui.empty.replaceChildren(heading, detail);
+          ui.empty.hidden = false;
+        }
+
+        function stopVideo() {
+          const video = ui.video;
+          video.onloadedmetadata = null;
+          video.onended = null;
+          video.onerror = null;
+          if (!video.getAttribute("src")) return;
+          video.pause();
+          video.hidden = true;
+          video.removeAttribute("src");
+          video.load();
+        }
+
+        function showVideo(index, record) {
+          const video = ui.video;
+          ui.fileName.textContent = record.name;
+          ui.dimensions.textContent = "Video · notes only";
+          showEmpty(
+            "Loading the video",
+            "Markup, zoom and pan are off for video. Notes save as usual.",
+          );
+          video.onloadedmetadata = () => {
+            if (activeIndex !== index) return;
+            ui.empty.hidden = true;
+            video.hidden = false;
+            const length = Number.isFinite(video.duration)
+              ? ` · ${video.duration.toFixed(1)} s`
+              : "";
+            ui.dimensions.textContent = `${video.videoWidth.toLocaleString()} × ${video.videoHeight.toLocaleString()}${length} video`;
+            // An engine that refuses unmuted autoplay still plays muted; the
+            // controls unmute it. Other play() failures (an early pause) are left alone.
+            video.play().catch((error) => {
+              if (activeIndex !== index || error?.name !== "NotAllowedError")
+                return;
+              video.muted = true;
+              video.play().catch(() => {});
+            });
+          };
+          video.onended = () => {
+            if (activeIndex !== index) return;
+            video.currentTime = 0;
+            video.play().catch(() => {});
+          };
+          video.onerror = () => {
+            if (activeIndex !== index) return;
+            video.hidden = true;
+            const code = video.error?.code;
+            // Decode (3) and unsupported-source (4) errors mean the browser
+            // cannot decode the file; aborts (1) and network errors (2) do not.
+            if (code === 3 || code === 4)
+              showEmpty(
+                record.name,
+                "This browser cannot play this file. Try an H.264 MP4 or a WebM file. Notes can still be saved.",
+              );
+            else
+              showEmpty(
+                `${record.name} could not be loaded`,
+                `The browser reported media error ${code ?? "unknown"}. Notes can still be saved.`,
+              );
+          };
+          video.src = record.url;
+          if (!record.dirty && !completed)
+            setStatus("saved", "Video ready · notes save automatically");
+        }
+
+        async function paintCurrentImage() {
+          const index = activeIndex;
+          if (index < 0 || index >= images.length) return;
+          const record = images[index];
+          canvas.hidden = true;
+          ui.alphaBadge.hidden = true;
+          delete canvas.dataset.alpha;
+          if (record.kind === "video") {
+            showVideo(index, record);
+            return;
+          }
+          stopVideo();
+          ui.empty.hidden = false;
+          ui.empty.innerHTML =
+            "<strong>Loading the image</strong>Markup uses the full-resolution image.";
+          ui.fileName.textContent = record.name;
+          try {
+            const image = await getLoadedImage(index);
+            if (activeIndex !== index) return;
+            if (!record.displaySize) {
+              setStatus("saving", "Preparing the image for markup…");
+              await ensurePrepared(index, image);
+              if (activeIndex !== index) return;
+            }
+            const view = workingCopy(index, image);
+            canvas.width = view.width;
+            canvas.height = view.height;
+            ctx = canvas.getContext("2d");
+            if (!ctx)
+              throw new Error("This browser could not create the image canvas.");
+            showAlpha(index, view);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(view.source, 0, 0, canvas.width, canvas.height);
+            renderPreviewMarkup(ctx, record, record.markup);
+            canvas.hidden = false;
+            ui.empty.hidden = true;
+            const { width, height } = record.displaySize;
+            ui.dimensions.textContent = `${width.toLocaleString()} × ${height.toLocaleString()} original px`;
+            canvas.setAttribute(
+              "aria-label",
+              `Markup canvas for ${record.name}`,
+            );
+            updateMarkupButtons();
+            if (!record.dirty && !completed)
+              setStatus("saved", "Image ready · changes save automatically");
+          } catch (error) {
+            if (activeIndex !== index) return;
+            canvas.hidden = true;
+            ui.empty.hidden = false;
+            ui.empty.innerHTML =
+              "<strong>Image could not be prepared</strong>Markup is off for this image. Notes can still be saved.";
+            showError(error.message);
+          }
+        }
+
+        // The canvas draws the image itself, or a copy whose longest edge is
+        // PREVIEW_MAX_EDGE when the image is larger. Only the active image
+        // keeps a copy.
+        function workingCopy(index, image) {
+          if (workingImage?.index === index) return workingImage;
+          releaseWorkingCopy();
+          const { width, height } = images[index].displaySize;
+          const scale = Math.min(1, PREVIEW_MAX_EDGE / Math.max(width, height));
+          if (scale === 1) {
+            workingImage = { index, source: image, width, height };
+            return workingImage;
+          }
+          const copy = document.createElement("canvas");
+          copy.width = Math.max(1, Math.round(width * scale));
+          copy.height = Math.max(1, Math.round(height * scale));
+          const copyContext = copy.getContext("2d");
+          if (!copyContext) {
+            copy.width = 0;
+            copy.height = 0;
+            throw new Error("This browser could not create the image canvas.");
+          }
+          copyContext.imageSmoothingQuality = "high";
+          copyContext.drawImage(image, 0, 0, copy.width, copy.height);
+          workingImage = {
+            index,
+            source: copy,
+            width: copy.width,
+            height: copy.height,
+          };
+          return workingImage;
+        }
+
+        function releaseWorkingCopy() {
+          if (workingImage?.source instanceof HTMLCanvasElement) {
+            workingImage.source.width = 0;
+            workingImage.source.height = 0;
+          }
+          workingImage = null;
+        }
+
+        function switchTo(index, { flush = true } = {}) {
+          if (
+            !images.length ||
+            index < 0 ||
+            index >= images.length ||
+            index === activeIndex
+          )
+            return;
+          if (
+            activePointer &&
+            !finishDrawing({ pointerId: activePointer.pointerId })
+          )
+            return;
+          if (flush && activeIndex >= 0) flushImage(activeIndex);
+          hideTextComposer();
+          canvas.hidden = true;
+          ui.empty.hidden = false;
+          stopVideo();
+          releaseWorkingCopy();
+          activeIndex = index;
+          resetView();
+          updateMediaMode();
+          const record = images[index];
+          ui.index.value = String(index + 1);
+          ui.index.max = String(images.length);
+          ui.total.textContent = `/ ${images.length}`;
+          ui.notes.value = record.notes;
+          ui.notesImage.textContent = `Image ${index + 1}`;
+          updateNotesCount();
+          ui.previous.disabled = index === 0 || completed;
+          ui.next.disabled = index === images.length - 1 || completed;
+          paintCurrentImage();
+        }
+
+        function touchRecord(index, change) {
+          const record = images[index];
+          const revision = record.revision + 1;
+          let journal;
+          let patch;
+          if (change.type === "notes") {
+            journal = record.notesJournal;
+            patch = {
+              revision,
+              start: change.start,
+              delete: change.delete,
+              insert: change.insert,
+            };
+          } else {
+            journal = record.markupJournal;
+            patch = { revision, op: change.op };
+            if (change.index !== undefined) patch.index = change.index;
+            if (change.mark !== undefined) patch.mark = change.mark;
+            if (change.group !== undefined) patch.group = change.group;
+          }
+          journal.push(patch);
+          record.revision = revision;
+          record.dirty = true;
+          if (change.type === "markup") scheduleUpload(index);
+          clearError();
+          if (closePayloadWithinLimit()) {
+            scheduleSave(
+              index,
+              change.type === "notes" ? NOTES_SAVE_DELAY_MS : SAVE_DELAY_MS,
+            );
+            if (index === activeIndex) setStatus("saving", "Unsaved changes");
+          } else if (savesInFlight.has(index)) {
+            scheduleSave(index);
+          } else {
+            queueSave(index).catch(() => {});
+          }
+        }
+
+        function scheduleSave(index, delay = SAVE_DELAY_MS) {
+          const record = images[index];
+          if (record.timer) clearTimeout(record.timer);
+          record.timer = setTimeout(() => {
+            record.timer = 0;
+            if (activePointer && activePointer.index === index) {
+              scheduleSave(index);
+              return;
+            }
+            enqueueSave(index).catch(() => {});
+          }, delay);
+        }
+
+        function queueSave(index, { keepalive = false } = {}) {
+          const record = images[index];
+          if (record.timer) {
+            clearTimeout(record.timer);
+            record.timer = 0;
+          }
+          if (!record.dirty) return Promise.resolve();
+          const requestedRevision = record.revision;
+          const existing = savesInFlight.get(index);
+          if (existing && existing.revision === requestedRevision)
+            return existing.promise;
+
+          const flight = { revision: requestedRevision, promise: null };
+          const slowSave = setTimeout(() => {
+            if (index === activeIndex && record.dirty && !completed)
+              setStatus("saving", "Saving changes…");
+          }, SAVING_STATUS_DELAY_MS);
+          const previous = saveTail;
+          const promise = previous
+            .catch(() => {})
+            .then(async () => {
+              if (!record.dirty) {
+                if (index === activeIndex && !completed) {
+                  setStatus(
+                    "saved",
+                    activePointer?.index === index && activePointer.penPreview
+                      ? "Completed pen segments saved · current stroke is still in progress"
+                      : "All changes saved",
+                  );
+                }
+                return;
+              }
+              const revision = record.revision;
+              const snapshot = closeSnapshotFor(index);
+              const sendsMarkup = snapshot.markup_delta.length > 0;
+              const body = JSON.stringify(snapshot);
+              flight.revision = revision;
+              const response = await fetch("api/save", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body,
+                // Browsers refuse keepalive requests above 64 KiB.
+                keepalive:
+                  keepalive &&
+                  encoder.encode(body).byteLength <= MAX_PAGEHIDE_BYTES,
+              });
+              const result = await readJson(response);
+              if (result.saved !== true || result.ignored === true)
+                throw new Error("The server did not confirm this save.");
+              // A save without markup patches never moves markup_revision, so
+              // a different one means another page changed the markup.
+              if (
+                !Number.isSafeInteger(result.revision) ||
+                result.revision !== revision ||
+                !Number.isSafeInteger(result.markup_revision) ||
+                (!sendsMarkup && result.markup_revision !== record.markupRevision)
+              ) {
+                throw new Error(
+                  "The server has a newer image revision; this edit was not confirmed as durable. Reopen the review before continuing.",
+                );
+              }
+              record.savedRevision = revision;
+              // Uploads carry this revision. A changed one without a scheduled
+              // upload follows a save that failed after its markup change.
+              if (result.markup_revision !== record.markupRevision) {
+                record.markupRevision = result.markup_revision;
+                if (!uploadTimers.has(index)) scheduleUpload(index);
+              }
+              record.notesJournal = record.notesJournal.filter(
+                (patch) => patch.revision > record.savedRevision,
+              );
+              record.markupJournal = record.markupJournal.filter(
+                (patch) => patch.revision > record.savedRevision,
+              );
+              record.dirty = record.revision > record.savedRevision;
+              if (index === activeIndex && !record.dirty && !completed) {
+                setStatus(
+                  "saved",
+                  activePointer?.index === index && activePointer.penPreview
+                    ? "Completed pen segments saved · current stroke is still in progress"
+                    : "All changes saved",
+                );
+              }
+              return result;
+            })
+            .catch((error) => {
+              if (index === activeIndex && !completed)
+                setStatus("error", "Save failed");
+              showError(`Could not save ${record.name}: ${error.message}`);
+              throw error;
+            })
+            .finally(() => {
+              clearTimeout(slowSave);
+              const current = savesInFlight.get(index);
+              if (current && current.promise === promise)
+                savesInFlight.delete(index);
+            });
+          flight.promise = promise;
+          savesInFlight.set(index, flight);
+          saveTail = promise;
+          return promise;
+        }
+        function enqueueSave(index) {
+          return queueSave(index);
+        }
+        function flushImage(index) {
+          if (index < 0 || !images[index]) return Promise.resolve();
+          return queueSave(index);
+        }
+
+        async function flushAllDirty() {
+          const requests = [];
+          for (let index = 0; index < images.length; index += 1) {
+            if (images[index].dirty) requests.push(queueSave(index));
+          }
+          await Promise.all(requests);
+          await saveTail;
+          const unsaved = images.find((image) => image.dirty);
+          if (unsaved)
+            throw new Error(`Changes for ${unsaved.name} are not yet durable.`);
+        }
+
+        const roundHalfUp = (value) => Math.floor(value + 0.5);
+        // Halves go to the even neighbour.
+        function roundHalfEven(value) {
+          const floor = Math.floor(value);
+          const fraction = value - floor;
+          if (fraction !== 0.5) return fraction < 0.5 ? floor : floor + 1;
+          return floor % 2 === 0 ? floor : floor + 1;
+        }
+
+        function loadImageFromUrl(url) {
+          return new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = () => reject(new Error("mask image failed to load"));
+            image.src = url;
+          });
+        }
+
+        // A text mark composites its stored mask, scaled from canvas pixels to
+        // display pixels, in the mark's color at its rounded origin.
+        async function drawExportTextMask(context, mark) {
+          const { width, height, scale, png } = mark.mask;
+          const tint = document.createElement("canvas");
+          try {
+            tint.width = Math.max(1, roundHalfUp(width * scale));
+            tint.height = Math.max(1, roundHalfUp(height * scale));
+            const tinting = tint.getContext("2d");
+            if (!tinting) throw new Error("canvas unavailable");
+            tinting.imageSmoothingEnabled = true;
+            tinting.imageSmoothingQuality = "high";
+            const maskImage = await loadImageFromUrl(png);
+            tinting.drawImage(maskImage, 0, 0, tint.width, tint.height);
+            tinting.globalCompositeOperation = "source-in";
+            tinting.fillStyle = mark.color;
+            tinting.fillRect(0, 0, tint.width, tint.height);
+            context.drawImage(tint, roundHalfEven(mark.x), roundHalfEven(mark.y));
+          } finally {
+            tint.width = 0;
+            tint.height = 0;
+          }
+        }
+
+        // The full-resolution image and its markup at the display size, as a
+        // PNG. Throws when the browser cannot allocate the canvas or encode it.
+        async function exportMarkedPng(record, image) {
+          const { width, height } = record.displaySize;
+          const marks = record.markup.slice();
+          const output = document.createElement("canvas");
+          try {
+            output.width = width;
+            output.height = height;
+            const context = output.getContext("2d");
+            if (!context) throw new Error("canvas unavailable");
+            context.drawImage(image, 0, 0, width, height);
+            for (const mark of marks) {
+              if (mark.type === "text") await drawExportTextMask(context, mark);
+              else drawShape(context, mark);
+            }
+            const blob = await new Promise((resolve) =>
+              output.toBlob(resolve, "image/png"),
+            );
+            if (!blob) throw new Error("PNG encoding failed");
+            return blob;
+          } finally {
+            output.width = 0;
+            output.height = 0;
+          }
+        }
+
+        function pendingUploads() {
+          return uploadTimers.size + uploadsRunning;
+        }
+
+        function scheduleUpload(index) {
+          clearTimeout(uploadTimers.get(index));
+          uploadTimers.delete(index);
+          // Saving empty markup deletes the PNG, so there is nothing to upload.
+          if (completed || closing || !images[index].markup.length) return;
+          uploadTimers.set(
+            index,
+            setTimeout(() => {
+              uploadTimers.delete(index);
+              // An export pauses the page, so it waits for a gesture to end.
+              if (activePointer) scheduleUpload(index);
+              else startUpload(index);
+            }, UPLOAD_DELAY_MS),
+          );
+        }
+
+        function startUpload(index) {
+          uploadsRunning += 1;
+          const run = uploadTail
+            .then(() => uploadMarkedPng(index))
+            .finally(() => {
+              uploadsRunning -= 1;
+            });
+          uploadTail = run.catch(() => {});
+          return run;
+        }
+
+        async function flushUploads() {
+          for (const [index, timer] of uploadTimers) {
+            clearTimeout(timer);
+            uploadTimers.delete(index);
+            startUpload(index);
+          }
+          await uploadTail;
+        }
+
+        // Renders and uploads the PNG for the markup revision the server last
+        // acknowledged, and only once no markup change is waiting to be saved,
+        // so the PNG shows exactly the markup of that revision.
+        async function uploadMarkedPng(index) {
+          const record = images[index];
+          if (closing || !record.displaySize) return;
+          try {
+            if (record.markupJournal.length) await queueSave(index);
+          } catch {
+            return;
+          }
+          const revision = record.markupRevision;
+          if (
+            closing ||
+            record.markupJournal.length ||
+            !record.markup.length ||
+            record.uploadedRevision === revision
+          )
+            return;
+          let blob;
+          try {
+            blob = await exportMarkedPng(record, await getLoadedImage(index));
+          } catch {
+            showError(EXPORT_FAILED);
+            return;
+          }
+          if (
+            closing ||
+            record.markupJournal.length ||
+            record.markupRevision !== revision
+          )
+            return;
+          try {
+            const response = await fetch(
+              `api/marked/${index}?revision=${revision}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "image/png" },
+                body: blob,
+              },
+            );
+            // A newer markup revision was saved meanwhile; its upload follows.
+            if (response.status === 409) return;
+            const result = await readJson(response);
+            if (result.png_revision === revision && result.png_stale === false)
+              record.uploadedRevision = revision;
+          } catch (error) {
+            showError(
+              `Could not upload the marked PNG for ${record.name}: ${error.message}`,
+            );
+          }
+        }
+
+        function noteSplice(before, after) {
+          const oldText = Array.from(before);
+          const newText = Array.from(after);
+          let start = 0;
+          while (
+            start < oldText.length &&
+            start < newText.length &&
+            oldText[start] === newText[start]
+          )
+            start += 1;
+          let oldEnd = oldText.length;
+          let newEnd = newText.length;
+          while (
+            oldEnd > start &&
+            newEnd > start &&
+            oldText[oldEnd - 1] === newText[newEnd - 1]
+          ) {
+            oldEnd -= 1;
+            newEnd -= 1;
+          }
+          return {
+            start,
+            delete: oldEnd - start,
+            insert: newText.slice(start, newEnd).join(""),
+          };
+        }
+
+        function updateNotesCount() {
+          const length = ui.notes.value.length;
+          ui.notesCount.textContent = `${length.toLocaleString()} / ${MAX_NOTES_UTF16.toLocaleString()} UTF-16`;
+        }
+
+        ui.notes.addEventListener("input", () => {
+          if (activeIndex < 0 || completed) return;
+          const record = images[activeIndex];
+          const previous = record.notes;
+          const next = ui.notes.value;
+          if (next === previous) return;
+          if (next.length > MAX_NOTES_UTF16) {
+            ui.notes.value = previous;
+            showError(
+              `Notes are limited to ${MAX_NOTES_UTF16.toLocaleString()} UTF-16 units. This edit was not accepted.`,
+            );
+            setStatus("error", "Notes limit reached");
+            updateNotesCount();
+            return;
+          }
+          const patch = noteSplice(previous, next);
+          record.notes = next;
+          touchRecord(activeIndex, { type: "notes", ...patch });
+          updateNotesCount();
+        });
+
+        function addMark(mark) {
+          const index = activeIndex;
+          if (index < 0 || completed) return false;
+          const record = images[index];
+          if (record.markup.length >= MAX_MARKS) {
+            showError(
+              `An image is limited to ${MAX_MARKS.toLocaleString()} markup marks. This mark was not accepted.`,
+            );
+            setStatus("error", "Markup limit reached");
+            return false;
+          }
+          record.markup.push(mark);
+          touchRecord(index, { type: "markup", op: "append", mark });
+          redoStacks.delete(index);
+          updateMarkupButtons();
+          return true;
+        }
+
+        function beginDrawing(event) {
+          if (
+            activeIndex < 0 ||
+            completed ||
+            selectedTool === "text" ||
+            selectedTool === "view" ||
+            event.button !== 0
+          )
+            return;
+          const point = imagePoint(event);
+          if (!point) return;
+          event.preventDefault();
+          canvas.setPointerCapture(event.pointerId);
+          const width = lineWidthForImage();
+          const pointer = {
+            pointerId: event.pointerId,
+            index: activeIndex,
+            startPoint: point,
+          };
+          if (selectedTool === "pen") {
+            const record = images[activeIndex];
+            if (record.markup.length >= MAX_MARKS) {
+              showError(
+                `An image is limited to ${MAX_MARKS.toLocaleString()} markup marks. This stroke was not accepted.`,
+              );
+              setStatus("error", "Markup limit reached");
+              return;
+            }
+            const penStart = {
+              type: "pen",
+              color: selectedColor,
+              width,
+              points: [[rounded(point.x), rounded(point.y)]],
+            };
+            const group = `pen-${randomId()}`;
+            penStart.group = group;
+            pointer.penPreview = true;
+            pointer.group = group;
+            pointer.mark = penStart;
+            activePointer = pointer;
+            setStatus(
+              "saving",
+              "Stroke in progress · completed segments save as you draw",
+            );
+            updateDraft();
+            return;
+          }
+          if (selectedTool === "arrow") {
+            pointer.mark = {
+              type: "arrow",
+              color: selectedColor,
+              width,
+              x1: rounded(point.x),
+              y1: rounded(point.y),
+              x2: rounded(point.x),
+              y2: rounded(point.y),
+            };
+          } else {
+            pointer.mark = {
+              type: "rect",
+              color: selectedColor,
+              width,
+              x: rounded(point.x),
+              y: rounded(point.y),
+              w: 0,
+              h: 0,
+            };
+          }
+          pointer.penPreview = false;
+          pointer.shapePreview = true;
+          activePointer = pointer;
+        }
+
+        function updateDraft() {
+          if (activeIndex < 0 || workingImage?.index !== activeIndex) return;
+          const record = images[activeIndex];
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(workingImage.source, 0, 0, canvas.width, canvas.height);
+          renderPreviewMarkup(ctx, record, record.markup);
+          if (
+            (activePointer?.penPreview || activePointer?.shapePreview) &&
+            activePointer.index === activeIndex &&
+            activePointer.mark
+          ) {
+            renderPreviewMarkup(ctx, record, [activePointer.mark]);
+          }
+        }
+
+        function finalizePenPreview(pointer, continueStroke) {
+          const preview = pointer.mark;
+          if (!preview) return true;
+          const record = images[pointer.index];
+          const groupExists = record.markup.some(
+            (mark) => mark.group === pointer.group,
+          );
+          if (preview.points.length === 1 && groupExists) {
+            pointer.mark = continueStroke
+              ? { ...preview, points: [[...preview.points[0]]] }
+              : null;
+            return true;
+          }
+          const endpoint = preview.points[preview.points.length - 1];
+          if (!addMark(preview)) return false;
+          if (continueStroke) {
+            pointer.mark = {
+              type: "pen",
+              color: preview.color,
+              width: preview.width,
+              group: pointer.group,
+              points: [[endpoint[0], endpoint[1]]],
+            };
+            queueSave(pointer.index).catch(() => {});
+          } else {
+            pointer.mark = null;
+          }
+          return true;
+        }
+
+        function moveDrawing(event) {
+          if (
+            !activePointer ||
+            event.pointerId !== activePointer.pointerId ||
+            activePointer.index !== activeIndex
+          )
+            return;
+          const point = imagePoint(event);
+          if (!point) return;
+          const pointer = activePointer;
+          const mark = pointer.mark;
+          if (pointer.penPreview) {
+            const last = mark.points[mark.points.length - 1];
+            const dx = point.x - last[0];
+            const dy = point.y - last[1];
+            if (dx * dx + dy * dy >= 1.4 * 1.4) {
+              mark.points.push([rounded(point.x), rounded(point.y)]);
+              if (
+                mark.points.length === PEN_SEGMENT_POINTS &&
+                !finalizePenPreview(pointer, true)
+              ) {
+                mark.points.pop();
+                showError(
+                  "The next pen segment could not be admitted; wait for saved segments before continuing.",
+                );
+                setStatus("error", "Pen segment waiting to save");
+              }
+            }
+            updateDraft();
+            return;
+          }
+
+          if (mark.type === "arrow") {
+            mark.x2 = rounded(point.x);
+            mark.y2 = rounded(point.y);
+          } else {
+            mark.x = rounded(Math.min(pointer.startPoint.x, point.x));
+            mark.y = rounded(Math.min(pointer.startPoint.y, point.y));
+            mark.w = rounded(Math.abs(point.x - pointer.startPoint.x));
+            mark.h = rounded(Math.abs(point.y - pointer.startPoint.y));
+          }
+          updateDraft();
+        }
+
+        function finishDrawing(event) {
+          if (
+            !activePointer ||
+            (event && event.pointerId !== activePointer.pointerId)
+          )
+            return true;
+          const pointer = activePointer;
+          const index = pointer.index;
+          if (pointer.penPreview && !finalizePenPreview(pointer, false))
+            return false;
+          if (pointer.shapePreview && !addMark(structuredClone(pointer.mark))) {
+            activePointer = null;
+            if (index === activeIndex && !completed) {
+              const record = images[index];
+              if (record.dirty) scheduleSave(index);
+              updateMarkupButtons();
+              updateDraft();
+            }
+            return true;
+          }
+          activePointer = null;
+          if (index === activeIndex && !completed) {
+            const record = images[index];
+            if (record.dirty) scheduleSave(index);
+            setStatus(
+              record.dirty ? "saving" : "saved",
+              record.dirty ? "Unsaved changes" : "All changes saved",
+            );
+            updateMarkupButtons();
+            paintCurrentImage();
+          }
+          return true;
+        }
+
+        canvas.addEventListener("pointerdown", (event) => {
+          if (selectedTool === "view") return;
+          if (selectedTool === "text") {
+            if (event.button !== 0 || activeIndex < 0 || completed) return;
+            const point = imagePoint(event);
+            if (point) openTextComposer(point);
+            return;
+          }
+          beginDrawing(event);
+        });
+        canvas.addEventListener("pointermove", moveDrawing);
+        canvas.addEventListener("pointerup", finishDrawing);
+        canvas.addEventListener("pointercancel", finishDrawing);
+        canvas.addEventListener("lostpointercapture", finishDrawing);
+
+        ui.stage.addEventListener(
+          "wheel",
+          (event) => {
+            if (event.ctrlKey || event.metaKey) event.preventDefault();
+            if (canvas.hidden) return;
+            const unit =
+              event.deltaMode === 1
+                ? 16
+                : event.deltaMode === 2
+                  ? ui.stage.clientHeight
+                  : 1;
+            if (event.ctrlKey || event.metaKey) {
+              event.preventDefault();
+              zoomAt(
+                event.clientX,
+                event.clientY,
+                Math.exp(-event.deltaY * unit * 0.0015),
+              );
+            } else if (event.shiftKey) {
+              // Engines differ in which axis carries a Shift+wheel delta.
+              event.preventDefault();
+              view.x -=
+                (event.deltaX !== 0 ? event.deltaX : event.deltaY) * unit;
+              applyView();
+            }
+          },
+          { passive: false },
+        );
+
+        ui.stage.addEventListener("pointerdown", (event) => {
+          if (
+            selectedTool !== "view" ||
+            event.button !== 0 ||
+            canvas.hidden ||
+            activePointer ||
+            event.target.closest(".text-composer")
+          )
+            return;
+          event.preventDefault();
+          ui.stage.setPointerCapture(event.pointerId);
+          panPointer = {
+            pointerId: event.pointerId,
+            x: event.clientX,
+            y: event.clientY,
+          };
+          ui.stage.dataset.panning = "true";
+        });
+        ui.stage.addEventListener("pointermove", (event) => {
+          if (!panPointer || event.pointerId !== panPointer.pointerId) return;
+          view.x += event.clientX - panPointer.x;
+          view.y += event.clientY - panPointer.y;
+          panPointer.x = event.clientX;
+          panPointer.y = event.clientY;
+          applyView();
+        });
+        function endPan(event) {
+          if (!panPointer || event.pointerId !== panPointer.pointerId) return;
+          panPointer = null;
+          delete ui.stage.dataset.panning;
+        }
+        ui.stage.addEventListener("pointerup", endPan);
+        ui.stage.addEventListener("pointercancel", endPan);
+        ui.stage.addEventListener("lostpointercapture", endPan);
+
+        ui.fit.addEventListener("click", resetView);
+
+        // An engine may drop a canvas's pixels when it resizes or restores the
+        // canvas; repaint from memory.
+        function repaintCanvas() {
+          if (
+            activeIndex >= 0 &&
+            !isVideo() &&
+            !canvas.hidden &&
+            workingImage?.index === activeIndex
+          )
+            updateDraft();
+        }
+        let repaintTimer = 0;
+        window.addEventListener("resize", () => {
+          clearTimeout(repaintTimer);
+          repaintTimer = setTimeout(repaintCanvas, 150);
+        });
+        // A 2D context is restored by default. Cancelling contextlost would stop
+        // the restore (the opposite of WebGL), so it is left alone.
+        canvas.addEventListener("contextrestored", repaintCanvas);
+        ui.fullscreen.addEventListener("click", () => {
+          if (isFullscreen()) exitFullscreen();
+          else enterFullscreen();
+        });
+        document.addEventListener("fullscreenchange", () => {
+          if (!document.fullscreenElement) {
+            if (!leavingFullscreen) engineExitAt = performance.now();
+            leavingFullscreen = false;
+          }
+          syncFullscreen();
+        });
+
+        function hideTextComposer() {
+          if (document.activeElement === ui.textInput) ui.textInput.blur();
+          ui.composer.hidden = true;
+          pendingTextPoint = null;
+          ui.textInput.value = "";
+        }
+
+        function openTextComposer(point) {
+          pendingTextPoint = point;
+          const size = images[activeIndex].displaySize;
+          const stageRect = ui.stage.getBoundingClientRect();
+          const canvasRect = canvas.getBoundingClientRect();
+          const scaleX = canvasRect.width / size.width;
+          const scaleY = canvasRect.height / size.height;
+          const offsetX = canvasRect.left - stageRect.left + point.x * scaleX;
+          const offsetY = canvasRect.top - stageRect.top + point.y * scaleY;
+          ui.composer.hidden = false;
+          const left = Math.max(8, Math.min(stageRect.width - 292, offsetX));
+          const top = Math.max(8, Math.min(stageRect.height - 135, offsetY));
+          ui.composer.style.left = `${left}px`;
+          ui.composer.style.top = `${top}px`;
+          ui.textInput.value = "";
+          ui.textInput.focus();
+        }
+
+        function wrapText(text, context, maxWidth) {
+          const output = [];
+          for (const paragraph of text.split("\n")) {
+            if (paragraph === "") {
+              output.push("");
+              continue;
+            }
+            let line = "";
+            for (const word of paragraph.split(/\s+/)) {
+              const candidate = line ? `${line} ${word}` : word;
+              if (context.measureText(candidate).width <= maxWidth) {
+                line = candidate;
+                continue;
+              }
+              if (line) output.push(line);
+              if (context.measureText(word).width <= maxWidth) {
+                line = word;
+                continue;
+              }
+              let fragment = "";
+              for (const character of word) {
+                const next = fragment + character;
+                if (fragment && context.measureText(next).width > maxWidth) {
+                  output.push(fragment);
+                  fragment = character;
+                } else {
+                  fragment = next;
+                }
+              }
+              line = fragment;
+            }
+            if (line) output.push(line);
+          }
+          return output;
+        }
+
+        function createTextMask(text, previewSize, previewX) {
+          const probe = document.createElement("canvas").getContext("2d");
+          probe.font = `${previewSize}px Arial, sans-serif`;
+          const maxWidth = Math.max(previewSize, canvas.width - previewX - 2);
+          const lines = wrapText(text, probe, maxWidth);
+          if (lines.length > MAX_TEXT_LINES) return null;
+          const textWidth = Math.max(
+            1,
+            ...lines.map((line) => probe.measureText(line).width),
+          );
+          const width = Math.max(
+            1,
+            Math.ceil(Math.min(maxWidth, textWidth) + 3),
+          );
+          const height = Math.max(
+            1,
+            Math.ceil(previewSize * 1.25 * lines.length + 3),
+          );
+          const maskCanvas = document.createElement("canvas");
+          maskCanvas.width = width;
+          maskCanvas.height = height;
+          const maskContext = maskCanvas.getContext("2d");
+          maskContext.font = `${previewSize}px Arial, sans-serif`;
+          maskContext.textBaseline = "top";
+          maskContext.fillStyle = "#fff";
+          lines.forEach((line, lineIndex) =>
+            maskContext.fillText(line, 0, lineIndex * previewSize * 1.25),
+          );
+          return {
+            width,
+            height,
+            png: maskCanvas.toDataURL("image/png"),
+            lines,
+          };
+        }
+
+        function commitText() {
+          if (!pendingTextPoint || activeIndex < 0 || completed) return;
+          const text = ui.textInput.value.trim();
+          if (Array.from(text).length > MAX_TEXT_CHARS) {
+            showError(
+              "A text label is limited to 240 characters. Shorten it before placing.",
+            );
+            setStatus("error", "Text limit reached");
+            return;
+          }
+          if (!text) {
+            hideTextComposer();
+            return;
+          }
+          const displayWidth = images[activeIndex].displaySize.width;
+          const point = pendingTextPoint;
+          const previewScale = fitWidth() / canvas.width;
+          const previewSize = 22 / previewScale;
+          const previewX = (point.x * canvas.width) / displayWidth;
+          const mask = createTextMask(text, previewSize, previewX);
+          if (!mask) {
+            showError(`Text labels are limited to ${MAX_TEXT_LINES} lines.`);
+            setStatus("error", "Text limit reached");
+            return;
+          }
+          const wrappedText = mask.lines.join("\n");
+          if (Array.from(wrappedText).length > MAX_TEXT_CHARS) {
+            showError(
+              `A wrapped text label is limited to ${MAX_TEXT_CHARS} characters. Shorten it before placing.`,
+            );
+            setStatus("error", "Text limit reached");
+            return;
+          }
+          // The mask is drawn at canvas resolution; scale is display pixels
+          // per mask pixel.
+          const mark = {
+            type: "text",
+            color: selectedColor,
+            x: rounded(point.x),
+            y: rounded(point.y),
+            size: (previewSize * displayWidth) / canvas.width,
+            text: wrappedText,
+            mask: {
+              width: mask.width,
+              height: mask.height,
+              scale: displayWidth / canvas.width,
+              png: mask.png,
+            },
+          };
+          if (addMark(mark)) {
+            hideTextComposer();
+            paintCurrentImage();
+          }
+        }
+
+        ui.placeText.addEventListener("click", commitText);
+        ui.textInput.addEventListener("input", () => {
+          if (Array.from(ui.textInput.value).length > MAX_TEXT_CHARS) {
+            showError(
+              `Text labels are limited to ${MAX_TEXT_CHARS} characters. The text will not be placed until shortened.`,
+            );
+            setStatus("error", "Text limit reached");
+          }
+        });
+
+        ui.textInput.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            hideTextComposer();
+          } else if (
+            event.key === "Enter" &&
+            !event.shiftKey &&
+            !event.ctrlKey &&
+            !event.metaKey
+          ) {
+            event.preventDefault();
+            commitText();
+          }
+        });
+
+        for (const button of document.querySelectorAll("[data-tool]")) {
+          button.addEventListener("click", () => setTool(button.dataset.tool));
+        }
+        for (const button of document.querySelectorAll("[data-color]")) {
+          button.addEventListener("click", () =>
+            setColor(button.dataset.color),
+          );
+        }
+        $("#color").addEventListener("input", (event) =>
+          setColor(event.target.value),
+        );
+
+        function discardActivePenPreview() {
+          if (!activePointer?.penPreview) return false;
+          activePointer = null;
+          updateDraft();
+          return true;
+        }
+
+        ui.undo.addEventListener("click", () => {
+          if (activeIndex < 0 || completed) return;
+          if (
+            activePointer &&
+            !finishDrawing({ pointerId: activePointer.pointerId })
+          ) {
+            if (discardActivePenPreview()) {
+              showError(
+                "The in-progress pen segment was not accepted. Saved markup remains unchanged.",
+              );
+              setStatus("error", "Pen segment not saved");
+            }
+            return;
+          }
+          const record = images[activeIndex];
+          if (!record.markup.length) return;
+          const last = record.markup[record.markup.length - 1];
+          const group = typeof last.group === "string" ? last.group : null;
+          const removed = [];
+          if (group) {
+            while (
+              record.markup.length &&
+              record.markup[record.markup.length - 1].group === group
+            )
+              removed.unshift(record.markup.pop());
+          } else {
+            removed.push(record.markup.pop());
+          }
+          const change = group
+            ? { type: "markup", op: "undo_group", group }
+            : { type: "markup", op: "undo" };
+          touchRecord(activeIndex, change);
+          if (!redoStacks.has(activeIndex)) redoStacks.set(activeIndex, []);
+          redoStacks.get(activeIndex).push(removed);
+          updateMarkupButtons();
+          paintCurrentImage();
+        });
+
+        ui.clear.addEventListener("click", () => {
+          if (activeIndex < 0 || completed) return;
+          if (
+            activePointer &&
+            !finishDrawing({ pointerId: activePointer.pointerId })
+          ) {
+            if (discardActivePenPreview()) {
+              showError(
+                "The in-progress pen segment was not accepted. Click Clear again to remove saved markup.",
+              );
+              setStatus("error", "Pen segment not saved");
+            }
+            return;
+          }
+          const record = images[activeIndex];
+          if (!record.markup.length) return;
+          record.markup = [];
+          touchRecord(activeIndex, { type: "markup", op: "clear" });
+          redoStacks.delete(activeIndex);
+          updateMarkupButtons();
+          paintCurrentImage();
+        });
+
+        ui.redo.addEventListener("click", () => {
+          if (activeIndex < 0 || completed || activePointer) return;
+          const gesture = redoStacks.get(activeIndex)?.pop();
+          if (!gesture) return;
+          const record = images[activeIndex];
+          if (record.markup.length + gesture.length > MAX_MARKS) {
+            redoStacks.get(activeIndex).push(gesture);
+            showError(
+              `An image is limited to ${MAX_MARKS.toLocaleString()} markup marks. Redo was not applied.`,
+            );
+            setStatus("error", "Markup limit reached");
+            return;
+          }
+          for (const mark of gesture) {
+            record.markup.push(mark);
+            touchRecord(activeIndex, { type: "markup", op: "append", mark });
+          }
+          updateMarkupButtons();
+          paintCurrentImage();
+        });
+
+        ui.previous.addEventListener("click", () => switchTo(activeIndex - 1));
+        ui.next.addEventListener("click", () => switchTo(activeIndex + 1));
+        ui.index.addEventListener("change", () => {
+          const target = Number.parseInt(ui.index.value, 10);
+          if (
+            Number.isInteger(target) &&
+            target >= 1 &&
+            target <= images.length
+          )
+            switchTo(target - 1);
+          else ui.index.value = String(Math.max(1, activeIndex + 1));
+        });
+        ui.index.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") ui.index.blur();
+        });
+
+        function isTextField(element) {
+          return (
+            element instanceof HTMLElement &&
+            (element.isContentEditable ||
+              element.matches('input, textarea, select, [role="textbox"]'))
+          );
+        }
+
+        // Canvas and stage pointerdown handlers call preventDefault, which
+        // would otherwise leave focus (and arrow keys) in a text field.
+        document.addEventListener(
+          "pointerdown",
+          (event) => {
+            const active = document.activeElement;
+            if (isTextField(active) && !active.contains(event.target))
+              active.blur();
+          },
+          true,
+        );
+
+        const TOOL_KEYS = ["view", "pen", "arrow", "rect", "text"];
+
+        document.addEventListener("keydown", (event) => {
+          if (event.defaultPrevented) return;
+          const command = event.ctrlKey || event.metaKey;
+          const typing = isTextField(event.target);
+          const key =
+            event.key.length === 1 ? event.key.toLowerCase() : event.key;
+          if (key === "Escape" && !command && !event.altKey) {
+            if (isFullscreen()) {
+              event.preventDefault();
+              exitFullscreen();
+              return;
+            }
+            // An engine may leave fullscreen on Esc itself and still deliver
+            // the key; that same press must not also drop the tool. The event
+            // time tells it apart from a later press, because some engines
+            // deliver nothing for the press that left fullscreen.
+            if (event.timeStamp <= engineExitAt) {
+              engineExitAt = -Infinity;
+              return;
+            }
+            if (typing) {
+              event.preventDefault();
+              event.target.blur();
+              return;
+            }
+          }
+          if (command && !event.altKey && !event.shiftKey && key === "f") {
+            event.preventDefault();
+            if (isFullscreen()) exitFullscreen();
+            else enterFullscreen();
+            return;
+          }
+          if (completed) return;
+          if (command && !event.altKey && key === "Enter") {
+            event.preventDefault();
+            ui.done.click();
+            return;
+          }
+          if (typing) return;
+          if (
+            isVideo() &&
+            (command ||
+              event.altKey ||
+              key === " " ||
+              /^Digit[1-5]$/.test(event.code))
+          ) {
+            if (key === " " && !command && !event.altKey) {
+              event.preventDefault();
+              if (ui.video.paused) ui.video.play().catch(() => {});
+              else ui.video.pause();
+            }
+            return;
+          }
+          if (command && !event.altKey) {
+            const button =
+              key === "z" && !event.shiftKey
+                ? ui.undo
+                : key === "y" || (key === "z" && event.shiftKey)
+                  ? ui.redo
+                  : key === "e" && !event.shiftKey
+                    ? ui.clear
+                    : null;
+            if (!button) return;
+            event.preventDefault();
+            button.click();
+            return;
+          }
+          const digit = /^Digit([1-5])$/.exec(event.code)?.[1];
+          if (event.altKey && !command && !event.shiftKey && digit) {
+            event.preventDefault();
+            const swatch = document.querySelectorAll("[data-color]")[digit - 1];
+            if (swatch) swatch.click();
+            else {
+              const picker = $("#color");
+              try {
+                picker.showPicker();
+              } catch {
+                picker.click();
+              }
+            }
+            return;
+          }
+          if (command || event.altKey) return;
+          if (key === " ") {
+            // Also stops a focused button from activating on the same press.
+            event.preventDefault();
+            resetView();
+          } else if (digit && !event.shiftKey) {
+            event.preventDefault();
+            setTool(TOOL_KEYS[digit - 1]);
+          } else if (key === "Escape" && selectedTool !== "view") {
+            event.preventDefault();
+            // Esc cancels the unsaved part of a drag instead of saving it.
+            if (activePointer?.shapePreview) {
+              activePointer = null;
+              updateDraft();
+            } else if (discardActivePenPreview()) {
+              const record = images[activeIndex];
+              if (record.dirty) scheduleSave(activeIndex);
+              setStatus(
+                record.dirty ? "saving" : "saved",
+                record.dirty ? "Unsaved changes" : "All changes saved",
+              );
+            }
+            setTool("view");
+          } else if (key === "ArrowLeft" && activeIndex > 0) {
+            event.preventDefault();
+            switchTo(activeIndex - 1);
+          } else if (key === "ArrowRight" && activeIndex < images.length - 1) {
+            event.preventDefault();
+            switchTo(activeIndex + 1);
+          }
+        });
+
+        ui.done.addEventListener("click", async () => {
+          if (completed || !state || ui.done.disabled) return;
+          ui.done.disabled = true;
+          const previousInert = document.body.inert;
+          document.body.inert = true;
+          clearError();
+          setStatus("saving", "Saving every image before finishing…");
+          try {
+            if (pendingTextPoint && ui.textInput.value.trim()) commitText();
+            else if (pendingTextPoint) hideTextComposer();
+            if (pendingTextPoint)
+              throw new Error(
+                "Place or shorten the current text label before completing the review.",
+              );
+            if (
+              activePointer &&
+              !finishDrawing({ pointerId: activePointer.pointerId })
+            ) {
+              throw new Error(
+                "Finish the current drawing after its pen segments are saved.",
+              );
+            }
+            await flushAllDirty();
+            if (pendingUploads())
+              setStatus("saving", "Saving marked images before finishing…");
+            // A PNG that fails to render stays stale and does not block Done.
+            await flushUploads();
+            const response = await fetch("api/done", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: "{}",
+            });
+            await readJson(response);
+            setSessionDone();
+          } catch (error) {
+            ui.done.disabled = false;
+            document.body.inert = previousInert;
+            showError(`Review could not be completed: ${error.message}`);
+            setStatus("error", "Not completed — save failed");
+          }
+        });
+
+        function closePayload() {
+          return {
+            page_id: pageId,
+            snapshots: images.flatMap((record, index) =>
+              record.dirty ? [closeSnapshotFor(index)] : [],
+            ),
+          };
+        }
+
+        function workPending() {
+          return (
+            savesInFlight.size > 0 ||
+            images.some((record) => record.timer) ||
+            pendingUploads() > 0
+          );
+        }
+
+        window.addEventListener("beforeunload", (event) => {
+          if (!workPending()) return;
+          // Debounced saves start now and outlive the page: a request that
+          // pagehide starts in a closing tab may never leave the browser.
+          for (let index = 0; index < images.length; index += 1) {
+            if (images[index].timer)
+              queueSave(index, { keepalive: true }).catch(() => {});
+          }
+          event.preventDefault();
+          event.returnValue = "";
+        });
+
+        window.addEventListener("pagehide", () => {
+          if (closing || completed) return;
+          if (
+            activePointer &&
+            !finishDrawing({ pointerId: activePointer.pointerId })
+          )
+            discardActivePenPreview();
+          const body = JSON.stringify(closePayload());
+          if (encoder.encode(body).byteLength > MAX_PAGEHIDE_BYTES) return;
+          closing = true;
+          stopHeartbeats();
+          for (const record of images) {
+            if (record.timer) clearTimeout(record.timer);
+            record.timer = 0;
+          }
+          for (const timer of uploadTimers.values()) clearTimeout(timer);
+          uploadTimers.clear();
+          const data = new Blob([body], { type: "application/json" });
+          try {
+            if (navigator.sendBeacon("api/close", data)) return;
+          } catch {
+            /* Fetch is the fallback when the beacon queue is unavailable. */
+          }
+          fetch("api/close", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body,
+            keepalive: true,
+          }).catch(() => {
+            /* The browser is closing; there is no further UI channel. */
+          });
+        });
+
+        // A page restored from the back/forward cache reloads, so the load
+        // checks whether its review is still open.
+        window.addEventListener("pageshow", (event) => {
+          if (event.persisted) location.reload();
+        });
+
+        function sendHeartbeat() {
+          if (completed || closing) return;
+          fetch("api/heartbeat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              visible: document.visibilityState === "visible",
+              page_id: pageId,
+            }),
+          }).catch(() => {
+            /* Save calls report actionable failures in the interface. */
+          });
+        }
+
+        // The close timeout counts only while the page reports itself visible,
+        // so a hidden page sends one heartbeat when it hides and then none.
+        // A page that loads hidden gets no visibilitychange, so the first
+        // heartbeat goes out at once.
+        function startHeartbeats(interval) {
+          sendHeartbeat();
+          heartbeatTimer = setInterval(() => {
+            if (document.visibilityState === "visible") sendHeartbeat();
+          }, interval);
+          document.addEventListener("visibilitychange", sendHeartbeat);
+        }
+
+        function stopHeartbeats() {
+          clearInterval(heartbeatTimer);
+          heartbeatTimer = 0;
+          document.removeEventListener("visibilitychange", sendHeartbeat);
+        }
+
+        async function initialize() {
+          try {
+            const response = await fetch(
+              `api/state?page_id=${encodeURIComponent(pageId)}`,
+              { cache: "no-store" },
+            );
+            state = await readJson(response);
+            images = (state.images || []).map((image, index) => ({
+              ...image,
+              url: image.url || `media/${index}`,
+              notes: typeof image.notes === "string" ? image.notes : "",
+              markup: Array.isArray(image.markup) ? image.markup : [],
+              revision: Number.isSafeInteger(image.revision)
+                ? image.revision
+                : 0,
+              savedRevision: Number.isSafeInteger(image.revision)
+                ? image.revision
+                : 0,
+              notesJournal: [],
+              markupJournal: [],
+              // Set by prepare; until then the image takes no markup.
+              displaySize: null,
+              // The markup revision the server last acknowledged, and the one
+              // whose PNG it holds; uploads carry the first.
+              markupRevision: Number.isSafeInteger(image.markup_revision)
+                ? image.markup_revision
+                : 0,
+              uploadedRevision: null,
+              dirty: false,
+              timer: 0,
+            }));
+            ui.question.textContent =
+              state.question ||
+              "Review the images and record your observations.";
+            document.title = state.session_id
+              ? `Visual review · ${state.session_id}`
+              : "Visual review";
+            ui.total.textContent = `/ ${images.length}`;
+            ui.index.max = String(Math.max(1, images.length));
+            ui.previous.disabled = true;
+            ui.next.disabled = images.length < 2;
+            if (!images.length) {
+              ui.fileName.textContent = "No images in this review";
+              ui.empty.innerHTML =
+                "<strong>No images to review</strong>This review session contains no images.";
+              ui.empty.hidden = false;
+              canvas.hidden = true;
+              ui.notes.disabled = true;
+              ui.index.disabled = true;
+              ui.done.disabled = false;
+              setStatus("saved", "Review is ready");
+            } else {
+              switchTo(0, { flush: false });
+              setStatus("saved", "Connected · changes save automatically");
+            }
+            startHeartbeats(state.heartbeat_interval_ms);
+          } catch (error) {
+            ui.question.textContent = "The review could not be loaded.";
+            ui.empty.innerHTML =
+              "<strong>Could not connect to the review</strong>Check the local review server and reopen this page.";
+            ui.empty.hidden = false;
+            canvas.hidden = true;
+            ui.notes.disabled = true;
+            ui.done.disabled = true;
+            setStatus("error", "Review unavailable");
+            showError(error.message);
+          }
+        }
+
+        // Fingerprinting protection changes the pixels a page reads back from
+        // a canvas, and with them the exported PNGs.
+        function canvasReadbackAltered() {
+          const colors = [
+            [24, 96, 160],
+            [200, 64, 32],
+            [255, 255, 255],
+            [0, 0, 0],
+          ];
+          const probe = document.createElement("canvas");
+          probe.width = 2;
+          probe.height = 2;
+          const probeContext = probe.getContext("2d", {
+            willReadFrequently: true,
+          });
+          if (!probeContext) return false;
+          colors.forEach(([red, green, blue], at) => {
+            probeContext.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+            probeContext.fillRect(at % 2, Math.floor(at / 2), 1, 1);
+          });
+          let data;
+          try {
+            ({ data } = probeContext.getImageData(0, 0, 2, 2));
+          } catch {
+            return true;
+          }
+          return colors.some((color, at) =>
+            [...color, 255].some(
+              (value, channel) => data[at * 4 + channel] !== value,
+            ),
+          );
+        }
+
+        if (canvasReadbackAltered()) {
+          ui.canvasWarning.textContent =
+            "This browser changes canvas pixels (privacy protection). Marked PNGs may contain noise.";
+          ui.canvasWarning.hidden = false;
+        }
+        setColor(selectedColor);
+        updateMarkupButtons();
+        initialize();
+      })();
+    </script>
+  </body>
+</html>
