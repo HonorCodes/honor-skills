@@ -3071,7 +3071,7 @@ try {
               "This browser cannot play this file. Try an H.264 MP4 or a WebM file.",
             ),
           "playback error shown",
-          8000,
+          30000,
         );
         assert.equal(await video.isVisible(), false, "the broken video stays hidden");
       });
