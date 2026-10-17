@@ -2594,7 +2594,9 @@
         ui.stage.addEventListener(
           "wheel",
           (event) => {
-            if (event.ctrlKey || event.metaKey) event.preventDefault();
+            // Modifier wheels belong to the viewer on every item, so a browser never
+            // zooms or scrolls the page under a video either.
+            if (event.ctrlKey || event.metaKey || event.shiftKey) event.preventDefault();
             if (canvas.hidden) return;
             const unit =
               event.deltaMode === 1
@@ -2603,7 +2605,6 @@
                   ? ui.stage.clientHeight
                   : 1;
             if (event.ctrlKey || event.metaKey) {
-              event.preventDefault();
               zoomAt(
                 event.clientX,
                 event.clientY,
@@ -2611,7 +2612,6 @@
               );
             } else if (event.shiftKey) {
               // Engines differ in which axis carries a Shift+wheel delta.
-              event.preventDefault();
               view.x -=
                 (event.deltaX !== 0 ? event.deltaX : event.deltaY) * unit;
               applyView();
