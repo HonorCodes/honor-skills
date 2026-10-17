@@ -3,6 +3,6 @@
   "private": true,
   "description": "Browser tests for the visual-review skill",
   "devDependencies": {
-    "playwright": "1.62.1"
+    "playwright": "1.64.1"
   }
 }
