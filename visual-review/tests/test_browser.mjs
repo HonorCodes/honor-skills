@@ -2927,24 +2927,32 @@ try {
               `${name} enabled on a video`,
             ),
         );
-        const before = await video.boundingBox();
+        const videoBox = async () => {
+          await page.waitForTimeout(150);
+          const box = await video.boundingBox();
+          return [box.x, box.y, box.width, box.height].map(Math.round);
+        };
+        const start = await video.boundingBox();
+        const before = await videoBox();
         await page.mouse.move(
-          before.x + before.width / 2,
-          before.y + before.height / 3,
+          start.x + start.width / 2,
+          start.y + start.height / 3,
         );
         await page.keyboard.down("Control");
         await page.mouse.wheel(0, -400);
         await page.keyboard.up("Control");
+        const afterZoom = await videoBox();
         await page.keyboard.down("Shift");
         await page.mouse.wheel(0, 120);
         await page.keyboard.up("Shift");
+        const afterPan = await videoBox();
         await page.keyboard.press("2");
-        await page.waitForTimeout(300);
-        const after = await video.boundingBox();
+        const after = await videoBox();
         assert.deepEqual(
-          [after.x, after.y, after.width, after.height].map(Math.round),
-          [before.x, before.y, before.width, before.height].map(Math.round),
-          "the video moved or scaled",
+          after,
+          before,
+          `the video moved or scaled: before ${before}, after Ctrl+wheel ` +
+            `${afterZoom}, after Shift+wheel ${afterPan}, after the 2 key ${after}`,
         );
         assert.equal(
           await page

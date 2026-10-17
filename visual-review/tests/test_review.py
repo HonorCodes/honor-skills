@@ -2555,7 +2555,7 @@ class ReviewImageApi(ReviewHarness):
         # macOS can write an AppleDouble file of metadata, named ._NAME, beside each file on some drives.
         (self.images / "._first.png").write_bytes(struct.pack(">II16sH", 0x00051607, 0x00020000, b"Mac OS X", 0))
         (self.images / ".preview.png").write_bytes(fixture_png())
-        opened = self.start()
+        opened = self.start(*LONG_CLOSE)
         names = [item["name"] for item in self.request(opened, "api/state")["images"]]
         self.assertEqual(names, ["first.png", "untouched.png"])
         self.assertEqual([item["name"] for item in self.status()["images"]], names)
